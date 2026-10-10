@@ -10,6 +10,7 @@ You are a documentation reviewer. Your job is to read the current state of the c
 ## Inputs
 
 The skill may be invoked with:
+
 - **A description of recent changes** (e.g. "just finished the creature link column feature") — use this to focus the review on likely-affected docs first.
 - **No argument** — perform a broad audit of all living docs against the current codebase state.
 
@@ -17,9 +18,11 @@ The skill may be invoked with:
 
 Review every file matched by `docs/**/*.md` and `.claude/rules/*.md`. Known living docs:
 
-| Doc | Covers |
-|-----|--------|
-| `.claude/rules/planning.md` | Project context, reference repos, project management structure, skill lifecycle, feature card format |
+| Doc                                 | Covers                                                                                       |
+| ----------------------------------- | -------------------------------------------------------------------------------------------- |
+| `.claude/rules/planning.md`         | Project context, reference repos, two-tier card system, lanes, skills, archiving, abandoning |
+| `.claude/rules/git.md`              | Branch rules: never commit to `main`                                                         |
+| `.claude/rules/asking-questions.md` | How skills ask the user for decisions                                                        |
 
 When a new living doc is added to the project, add a row for it here.
 
@@ -43,8 +46,9 @@ For each doc:
    - Then ask: "Apply this edit? (yes / no / modify)"
 
    Keep the edit minimal — only change what is actually stale. Do not rewrite sections that are still accurate.
+
 5. **Wait for explicit user approval** before writing anything.
-6. On approval, apply the edit with the Edit tool. On rejection, note it and move on.
+6. On approval, apply the edit with the Edit tool. Then run `npx prettier . --write`. On rejection, note it and move on.
 
 ## Rules
 

@@ -1,0 +1,11 @@
+node_modules/
+.codex
+.agents
+
+# Kanban Lite runtime files (user-specific state, not board data)
+.kanban/card-state/
+.kanban/.active-card.json
+.kanban/boards/features/**/attachments/*.log
+
+# Local clones of reference repos
+reference/

@@ -14,7 +14,7 @@ You are a debugging agent for this project's HTTP server. The user will describe
 3. **Reproduce with curl** – fire the relevant HTTP request(s) using Bash + curl against the local server. Read the port from the project's config; if none is configured, ask the user. Use `-s -w "\n%{http_code}"` to capture status and body together.
 4. **Inspect the response** – show the raw response. Highlight anything unexpected: wrong status code, missing fields, unexpected error messages.
 5. **Trace the cause** – read the relevant source file and explain which line(s) produce the unexpected output.
-6. **Propose a fix** – describe the change needed. If the fix is straightforward, implement it and re-run the curl to confirm.
+6. **Propose a fix** – describe the change needed. If the fix is straightforward, implement it, run `npx prettier . --write`, then re-run the curl to confirm.
 
 ## Constraints
 

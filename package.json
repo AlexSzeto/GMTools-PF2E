@@ -1,0 +1,16 @@
+{
+  "name": "gmtools-pf2e",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Document-first Pathfinder 2e (Remaster) DM tools.",
+  "scripts": {
+    "kanban": "kanban-lite serve --no-browser",
+    "format": "prettier --write .",
+    "sync:codex-skills": "node scripts/sync-codex-skills.mjs"
+  },
+  "devDependencies": {
+    "kanban-lite": "^1.2.22",
+    "prettier": "3.9.3"
+  }
+}

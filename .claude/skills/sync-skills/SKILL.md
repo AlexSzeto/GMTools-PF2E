@@ -10,7 +10,7 @@ Treat `.claude/skills` and `.claude/rules` as the canonical sources for project 
 Run:
 
 ```bash
-node scripts/sync-codex-skills.mjs
+npm run sync:codex-skills
 ```
 
 This regenerates `.codex/skills`, `.agents/skills`, `.codex/rules`, and `.agents/rules` from `.claude/skills` and `.claude/rules` by deleting the project-local mirrors and copying the Claude sources into them. Both mirrors are gitignored, so they are local to each checkout.

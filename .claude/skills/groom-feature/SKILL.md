@@ -1,158 +1,146 @@
 ---
 name: groom-feature
-description: Develops a thorough, developer-ready feature spec through interactive Q&A, then writes it to .kanban/boards/features/ with status "groomed" or "in-progress". USE FOR: turning a planned idea into a full spec; grooming an existing planned card; starting implementation planning for a well-understood feature.
+description: Scopes a branch-level rollout through interactive Q&A — adopts strays from Planned, scans the backlog for candidates, discusses intent, then pulls agreed cards in and spins up new story cards. Re-runnable at any stage. USE FOR: deciding what belongs in a release; filling out a blank-slate feature; re-scoping a rollout mid-branch.
 ---
 
 # Groom Feature
 
-You are developing a full feature specification through iterative dialogue, one question at a time. The end goal is a detailed spec that can be handed off to any developer or agent without ambiguity.
+You are scoping a **feature** — a branch-level rollout — by deciding which stories and tickets belong to it. You are not writing an implementation spec: individual cards are specced later by `groom-story`.
+
+This skill is **re-runnable**. Run it to fill out a new feature, and run it again mid-branch whenever the scope shifts.
 
 ## Inputs
 
-The skill may be invoked with:
-- **A filename from `.kanban/boards/features/backlog/` or `.kanban/boards/features/planned/`** — read that file first and use its goal/notes as the starting context. Check `backlog/` first, then `planned/` if not found there.
-- **A free-form description** — treat it as the seed and begin questioning from there.
-- **No argument** — Glob both `.kanban/boards/features/backlog/*.md` and `.kanban/boards/features/planned/*.md`, read frontmatter from all files, and present a numbered list sorted by `priority` (high → medium → low → unknown) before asking the user which feature to groom:
+- **A filename** from any lane (check `backlog/` first, then `in-progress/`, then the rest) — read that feature card first.
+- **No argument** — Glob every lane for cards whose `labels` contain `feature`, and present them grouped by lane with their goals. Ask which feature to groom. If exactly one feature is `in-progress`, offer it as the default.
 
-```
-High priority:
-  1. Feature Name — one-sentence goal
-  2. Feature Name — one-sentence goal
+Read the feature card before doing anything else. Note its **stage**, which governs all card movement below:
 
-Medium priority:
-  3. Feature Name — one-sentence goal
+- **Backlog-stage** — the feature card is in `backlog` (or `planned`). Nothing has been branched yet.
+- **Active** — the feature card is in `in-progress`. Its branch is checked out and work is underway.
 
-Low priority:
-  4. Feature Name — one-sentence goal
+## Step 1 — Housekeeping: adopt strays
 
-(unset)
-  5. Feature Name — one-sentence goal
-```
+Runs once, at the start. This is the only board read before the discussion.
 
-Ask: *"Which feature would you like to groom? Enter a number, or describe a new feature from scratch."* If the user picks a number, load that file and proceed as if it was passed as an argument. If the user describes a new feature, treat it as a free-form description and do **not** use any existing card.
+Glob `.kanban/boards/features/planned/*.md` and find cards with no `metadata.feature`. These are strays — cards a user dragged into Planned by hand, which the lane's semantics say belong to the active feature.
 
-If a source card was used, read it before asking the first question.
+If any exist, list them (filename + one-line goal) and ask: _"These cards are sitting in Planned without a feature link. Adopt them into `<feature-id>`?"_ Let the user accept all, accept some, or decline.
 
-## Questioning process
+For each adopted card, set `metadata.feature: '<feature-id>'` in its frontmatter. Note the adoptions — you will mention them in the context brief.
 
-- Ask **one question at a time**. Each question should build on the previous answer and dig into a relevant detail.
-- Cover: user-facing behavior, edge cases, data shapes, dependencies on existing features, constraints, and anything that would block a developer from starting.
-- **Investigate before asking**: When you are unsure how an existing feature is implemented, search the source code and report your findings to the user instead of asking them. Reserve questions for decisions and intent that cannot be determined from code alone.
-- **Check the old DM tools**: When the feature rebuilds something from `pf2e-remaster-dm-tools`, read the old implementation (and the matching campaign data in `pf2e-drakonis-data`) under `reference/` before the first question, summarize what it did, and ask only about what should change in the new document-first, column-based UI. See `.claude/rules/planning.md` for where the references live.
-- If a new sub-feature surfaces that is clearly out of scope, do **not** spec it here. Tell the user: *"That sounds like a separate feature — run `/create-feature` to capture it, then we can groom it independently."*
-- Continue until you are confident the spec is thorough enough to hand off.
+Do **not** move these cards. They are already in Planned; adoption is a link, not a move.
 
-## Finalizing the spec
+## Step 2 — Backlog scan
 
-When the Q&A is complete, generate a structured summary before writing any file. If an open question surfaces while drafting the summary, do **not** include it — return to the questioning phase, resolve it, then re-attempt the summary.
+Glob `.kanban/boards/features/backlog/*.md` and read each card's frontmatter and `## Goal`. Identify the ones plausibly within this feature's remit, judging by the feature's Goal and Notes.
 
-Present the summary in this format:
+This step matters most for a blank-slate feature, where the backlog is the entire raw material for the rollout. Do not present the list yet — carry it into the discussion and raise candidates as they become relevant.
 
-1. **Goal** — one or two sentences restating the desired outcome in your own words.
-2. **Scope** — bullet list of what is in scope and, if helpful, what is explicitly out of scope.
-3. **Work** — the planned tasks grouped by phase. Each phase gets a short milestone label and a flat bullet list of the concrete work items in that phase. Use plain sentences, not checkboxes. Maintenance or server-only features with no phases use a single flat list under a **Work** heading.
-4. **Assumptions** — every detail you filled in that the user did not specify. For each, state what you decided and why (convention match, simplicity, existing pattern). This section must be present even if minimal.
+## Step 3 — Context brief
 
-End the summary with:
+Before asking anything, summarize the current state in a few lines so the discussion starts grounded:
 
-> Does this look right? Reply with any changes, or say **"approved"** to save the spec.
+- **Goal** — the feature card's stated intent.
+- **Progress** — current checklist state (`N of M stories done`, `N of M tickets done`), or "nothing linked yet" for a blank slate.
+- **Current scope** — the cards already linked, grouped as stories and tickets, with their lanes.
+- **Just adopted** — any strays adopted in Step 1.
+- **Candidates** — a short count teaser only (e.g. _"I found 7 backlog cards that may fit; I'll raise them as we go."_), not the full list.
 
-Each time the user requests a change, acknowledge it in one sentence, show only the updated item(s), and repeat the approval prompt. Reprint the full summary only if the user asks. Repeat until the user says "approved" (case-insensitive).
+## Step 4 — Grooming Q&A
 
-On approval, ask: **"Save to `groomed` for later, or start implementing now (`in-progress`)?"**
+Normal grooming dialogue: **one question at a time**, each building on the last answer.
 
-### Option A — Save as groomed
+Clarify the rollout's intent and boundaries — what a user should be able to do when this merges, what the release explicitly will not include, and what would make the feature feel unfinished if left out.
 
-1. Derive a kebab-case slug from the feature name.
-2. Write the new file to `.kanban/boards/features/groomed/<slug>.md` with the full frontmatter (`version: 1`, `boardId: "features"`, `status: "groomed"`, `priority` preserved from source (or `medium` if none), `assignee: null`, `dueDate: null`, current `modified` timestamp, `completedAt: null`, `labels: []`, `attachments: []`, `order: "a0"`) and the spec body.
-3. If a source card existed (from `backlog/` or `planned/`): run `node scripts/move-feature.mjs <source-filename> <source-lane> groomed` to remove the source file and move its attachment. (The destination was already written in step 2, so the script will only delete the source.)
-4. Tell the user to run `/implement-feature <slug>.md` when ready to begin.
+As topics arise, be proactive:
 
-### Option B — Start now (in-progress)
+- **Surface candidates.** When the discussion touches an area a backlog card already covers, name that card and ask whether it belongs in this feature. Do not dump the whole candidate list at once — raise cards where they are relevant.
+- **Propose new stories.** When the discussion reveals work that no card covers, say so and propose a story: a title and a one-line goal. Get agreement, then note it for Step 5. Do not write the card mid-discussion.
+- **Every story must end at a user-visible change.** A story is a unit that ships something a user can see or do differently — not a layer (schema, repository, migration script) with no observable effect on its own. Before proposing a story, check that it concludes with something a user could notice: a new UI, a new choice, a fixed behavior, a visibly different result. A pure data-model or backend-plumbing slice with no UI or behavior change is not a story by itself — fold it into the story that surfaces it, even if that makes the surfacing story larger. It is fine for one story to carry a large invisible foundation as long as it ends visibly; it is not fine to split the foundation off as its own card.
+- **Push back on scope.** If the feature is growing past what a single branch should carry, say so and propose what to defer. Deferred items are recorded in Notes, not silently dropped.
+- **Investigate before asking.** When unsure how something currently works, search the codebase and report findings rather than asking the user.
 
-1. Derive a kebab-case slug from the feature name.
-2. Write the new file to `.kanban/boards/features/in-progress/<slug>.md` with `status: "in-progress"` and all required frontmatter fields.
-3. If a source card existed (from `backlog/` or `planned/`): run `node scripts/move-feature.mjs <source-filename> <source-lane> in-progress` to remove the source file and move its attachment. (The destination was already written in step 2, so the script will only delete the source.)
-4. Invoke the `implement-feature` skill with `<slug>.md` as the argument — do not just tell the user to run it manually.
+Keep the discussion at feature altitude. If the user starts specifying _how_ a story should work, note it in that story's Notes and steer back — that detail belongs in `groom-story`.
 
-Status transitions move the file to the appropriate status subdirectory. Always use `node scripts/move-feature.mjs <filename> <from-lane> <to-lane>` for any file move — never use direct file copy/move/delete commands.
+Continue until the scope is settled and the user has confirmed it.
 
-## Output file structure
+## Step 5 — Housekeeping: apply changes
 
-The markdown body (everything after the YAML frontmatter block) must follow this format:
+All card creation and movement happens here, batched, after the scope is confirmed. Behavior depends on the stage recorded at the start.
+
+### Backlog-stage feature
+
+Nothing moves lanes. The feature is not branched, so Planned must stay reserved for the active feature's scope.
+
+- **Existing cards** agreed into the feature: set `metadata.feature: '<feature-id>'` in place, leaving them in `backlog`.
+- **New stories** proposed during discussion: create in `.kanban/boards/features/backlog/` with `metadata.feature` set.
+
+### Active (in-progress) feature
+
+- **Existing backlog cards** agreed into the feature: set `metadata.feature`, then move each with `node scripts/move-feature.mjs <filename> backlog planned`.
+- **New stories** proposed during discussion: create directly in `.kanban/boards/features/planned/` with `metadata.feature` set.
+- Cards already in `planned`, `groomed`, or `in-progress` stay where they are — never move a card backwards.
+
+### New card format (both stages)
+
+New cards are **capture-quality**, not specs — the same shape `create-story` produces. Each gets a full spec later via `groom-story`.
 
 ```markdown
-# <Feature Title>
+---
+version: 1
+id: '<slug>'
+boardId: 'features'
+status: '<backlog | planned>'
+priority: '<high | medium | low>'
+assignee: null
+dueDate: null
+created: '<current UTC time in ISO 8601 format>'
+modified: '<current UTC time in ISO 8601 format>'
+completedAt: null
+labels: ['<story | polish | idea | blocker | defect>']
+attachments: []
+order: 'a0'
+metadata:
+  feature: '<feature-id>'
+---
+
+# <Story Title>
 
 ## Goal
 
-<Concise description of the desired outcome. No implementation steps.>
+<One to three sentences from the discussion. No implementation details.>
 
-## Tasks
+## Notes
 
-### Phase 1 — <Short milestone description>
-- [ ] Task description
-
-### Phase 2 — <Short milestone description>
-- [ ] Task description
-
-(omit phases for maintenance/server-only features — use flat task list instead)
-
-## Implementation Details
-
-<Code snippets, data shapes, class definitions, constraints, and design decisions captured during grooming. This section provides context but does not dictate step-by-step instructions unless a critical restriction applies.>
+<Anything the discussion established about this card — constraints, dependencies, open questions.>
 ```
 
-Do **not** include a `**Priority:**` line in the body — priority lives in YAML frontmatter only.
+### Update the feature card
 
-## Task List Standards
+Rewrite the feature card's `## Goal` if the discussion sharpened it, and append to `## Notes`:
 
-- Each task focuses on a single outcome that can be verified — either by automated tests or a brief observable check (e.g. what to open or curl). If a piece of work is not independently verifiable, bundle it with the adjacent task(s) that complete the testable unit.
-- If a bundled task becomes too large to describe in one sentence, break it into subtasks using a nested list (no checkboxes needed on subtasks — they are implementation notes, not tracked items).
-- Phases end at a user-visible or testable milestone. Maintenance and server-only features may use a single flat list.
-- Every answer from the Q&A that affects implementation must be captured somewhere in the spec — no context should be lost between sessions.
-- Leave all task checkboxes unchecked.
-- **Always append a docs-review task** as the final task of the last phase (or flat list). See below.
+- Scoping decisions and their rationale.
+- Deferred or descoped items, with why.
+- Anything the discussion settled that a future reader would otherwise have to re-derive.
 
-### Subagent-ready task standards
+Leave `## Stories` and `## Tickets` alone — those are derived and regenerated by `stage-and-commit`.
 
-Each phase will be handed off to a cold subagent with no memory of prior phases or the grooming dialogue. Every task must be self-contained enough for that agent to implement correctly without asking questions:
+### Finish
 
-- **File references**: Name the exact file path and, where relevant, the specific function, class, or render section to change (e.g. "in `document-view.mjs`, inside the `renderLink()` helper"). Never assume the implementer knows the codebase layout.
-- **API ownership**: When two components share a boundary, state explicitly which side owns each behavior (e.g. "the document view parses resource links and emits `onOpenResource`; the column layout decides where the new column opens — the document view does not manage columns itself").
-- **Term definitions**: Any domain-specific term used in a task (e.g. "resource link", "pinned column", "stat block") must be defined in the Implementation Details section. Never use project jargon in a task without a corresponding definition there.
-- **Multi-file tasks**: If a task touches more than one file, list every affected file explicitly — never write "and related files" or "all callers".
-- **Review/update tasks**: Tasks that say "review and update" a doc must name the specific sections to change and state what constitutes done (e.g. "add an `onOpenResource` row to the DocumentView props table; remove the retired `pinned` prop row").
-- **Breaking changes**: If a task removes or renames a public prop or exported function, state the old name, the new name or replacement, and list every caller file that needs updating.
-- **Test tasks**: Specify what to assert, not just "add a test" (e.g. "assert that clicking a creature link opens one creature column, and clicking it again focuses that column instead of opening a duplicate").
-
-## Docs-Review Task (always append)
-
-Every generated task list must end with a docs-review task. Infer which living docs are likely affected from the feature spec content, and name them explicitly in the task description:
-
-```
-- [ ] Review and update affected living docs: <comma-separated list of likely affected docs>
-```
-
-**Mapping feature scope → affected docs:**
-
-| Feature touches… | Likely affected docs |
-|---|---|
-| Planning workflow, card format, skills | `.claude/rules/planning.md` |
-| A named app area (document view, columns, rules, creatures, combat, campaign data, audio/media, …) | `docs/features/<area>.md` |
-| Any other topic already covered by a file in `docs/` or `.claude/rules/` | that file |
-
-This project's living docs are still being written. Glob `docs/**/*.md` and `.claude/rules/*.md` to see what exists, and when a feature adds a new living doc, add a row for it to this table (in both `groom-feature` and `create-hotfix`) and to the table in `update-docs`.
-
-A feature may affect multiple docs — list all that apply. When in doubt, err toward listing more rather than fewer.
-
-**Feature doc creation:** If the feature touches a named app area and that area's `docs/features/<area>.md` file does not yet exist, prepend a task before the docs-review task to create it:
-
-```
-- [ ] Create `docs/features/<area>.md` documenting the user flow, component interactions, server endpoints, and key data shapes for the <area> feature area
-```
+1. Run `npx prettier . --write`.
+2. Report what changed: cards adopted, cards linked, cards moved, new cards created (by filename), and how the feature card was updated.
+3. Suggest the next step — `/implement-feature <slug>.md` for a backlog-stage feature that is ready to branch, or `/groom-story <filename>` for a specific card on an active feature.
 
 ## Rules
 
+- Do **not** move any card during Steps 1–4. All movement is batched into Step 5.
+- Do **not** move cards at all for a backlog-stage feature — only set links.
+- Do **not** reassign a card that already carries a different `metadata.feature`. Surface the conflict to the user and let them decide.
+- Do **not** move a card backwards (e.g. `groomed` → `planned`).
+- Use `metadata.feature`, never a bare top-level `feature:` field. Kanban Lite strips unknown top-level frontmatter keys when the board rewrites a card.
+- Do **not** write full specs, tasks, or phases onto the new cards — that is `groom-story`'s job.
+- Do **not** scope a story that ends at a backend-only or data-model-only milestone with no user-visible result. Every story must conclude with something a user can see or do differently; fold invisible groundwork into the story that surfaces it.
+- Never assign the `feature` label to a child card.
+- Always use `node scripts/move-feature.mjs <filename> <from-lane> <to-lane>` for file moves — never direct copy/move/delete commands.
 - Do **not** modify any code.
-- Do **not** skip the conflict check when starting from scratch (no source file): briefly scan `.kanban/boards/features/backlog/`, `.kanban/boards/features/planned/`, and `.kanban/boards/features/groomed/` for cards that cover similar ground before the first question.
