@@ -147,3 +147,15 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Kanban Lite runtime files (user-specific state, not board data)
+.kanban/card-state/
+.kanban/.active-card.json
+.kanban/boards/features/**/attachments/*.log
+
+# Agent skill mirrors generated from .claude/ by scripts/sync-codex-skills.mjs
+.codex
+.agents
+
+# Local clones of reference repos (pf2e-remaster-dm-tools, pf2e-drakonis-data)
+reference/
