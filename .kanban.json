@@ -1,0 +1,61 @@
+{
+  "version": 2,
+  "boards": {
+    "features": {
+      "name": "Features",
+      "columns": [
+        {
+          "id": "backlog",
+          "name": "Backlog",
+          "color": "#4b5563"
+        },
+        {
+          "id": "planned",
+          "name": "Planned",
+          "color": "#6b7280"
+        },
+        {
+          "id": "groomed",
+          "name": "Groomed",
+          "color": "#3b82f6"
+        },
+        {
+          "id": "in-progress",
+          "name": "In Progress",
+          "color": "#f59e0b"
+        },
+        {
+          "id": "abandoned",
+          "name": "Abandoned",
+          "color": "#ef4444"
+        }
+      ],
+      "defaultStatus": "backlog",
+      "defaultPriority": "medium",
+      "nextCardId": 1
+    }
+  },
+  "defaultBoard": "features",
+  "kanbanDirectory": ".kanban",
+  "aiAgent": "claude",
+  "defaultPriority": "medium",
+  "defaultStatus": "backlog",
+  "nextCardId": 1,
+  "showPriorityBadges": true,
+  "showAssignee": false,
+  "showDueDate": false,
+  "showLabels": true,
+  "showBuildWithAI": false,
+  "showFileName": true,
+  "cardViewMode": "large",
+  "markdownEditorMode": false,
+  "showDeletedColumn": false,
+  "boardZoom": 100,
+  "cardZoom": 100,
+  "boardBackgroundMode": "fancy",
+  "boardBackgroundPreset": "aurora",
+  "port": 2954,
+  "drawerPosition": "right",
+  "labels": {},
+  "panelMode": "drawer"
+}
